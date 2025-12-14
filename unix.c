@@ -2,7 +2,9 @@
  * SCCSID=unix.c 3/15/83
  */
 #include <stdlib.h>
+#ifndef __MINGW64__
 #include <sys/times.h>
+#endif
 
 /* declarations to avoid warnings */
 void mcopy(char*, char*, int);
@@ -19,7 +21,7 @@ loc_( long int *arg )
 }
 
 
-
+#ifndef __MINGW64__
 /*
  * times_ - c routine to call library routine times
  */
@@ -27,7 +29,7 @@ void times_( int *iarg )
 {
   times( (struct tms *)iarg );
 }
-
+#endif
 
 #include <time.h>
 
@@ -37,7 +39,7 @@ void times_( int *iarg )
 void xtime_( char *chr )
 {
 	char		*character;
-	long		tloc,	scum;
+	long long		tloc,	scum;
 	int		i;
 
         tloc = time( & scum );
@@ -53,7 +55,7 @@ void xdate_( char *chr )
 {
 	struct	tm	*buffer;
 	char		*month,	*day,	*year;
-	long		tloc,	scum;
+	long long		tloc,	scum;
 
         tloc = time( & scum );
         buffer = localtime( & tloc);
