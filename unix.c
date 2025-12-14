@@ -39,7 +39,11 @@ void times_( int *iarg )
 void xtime_( char *chr )
 {
 	char		*character;
+#ifdef __MINGW64__
 	long long		tloc,	scum;
+#else
+	long		tloc,	scum;
+#endif
 	int		i;
 
         tloc = time( & scum );
@@ -55,7 +59,11 @@ void xdate_( char *chr )
 {
 	struct	tm	*buffer;
 	char		*month,	*day,	*year;
+#ifdef __MINGW64__
 	long long		tloc,	scum;
+#else
+	long		tloc,	scum;
+#endif
 
         tloc = time( & scum );
         buffer = localtime( & tloc);
