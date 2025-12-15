@@ -1,7 +1,22 @@
 CC = gcc
 CFLAGS = -g -O0 -Wno-error
+#FC = ifx
 FC = gfortran
-FFLAGS = -g -O0 -finteger-4-integer-8 -std=legacy
+
+ifeq ($(FC),ifx)
+#ifx (prep.: source /opt/intel/oneapi/setvars.sh)
+	FFLAGS = -g -O0 -i8 \
+			-warn all,noerrors,nointerfaces,noexternals,nointerfaces,nounused,nodeclarations \
+			-debug all -traceback
+	#FFLAGS = -g -check uninit -O1
+else
+#gfortran
+	FFLAGS = -g -O0 -finteger-4-integer-8 -std=legacy \
+			-Wall -Wextra -Wuninitialized -Wno-argument-mismatch 
+#			-fallow-argument-mismatch \
+#			-fdec-char-conversions \
+#			-malign-double
+endif
 
 OBJS = spice.o unix.o
 

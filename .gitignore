@@ -14,3 +14,4 @@ spice
 *.log
 *.exe
 *.o
+rawspice
