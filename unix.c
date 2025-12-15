@@ -242,28 +242,14 @@ void copy16_( char *from, char *to, int *length )
  * sccsid @(#)unix.c	6.1	(Splice2/Berkeley) 3/15/83
  */
 
-#ifndef lint
-// #define VAXUNIXASM
-#endif
-#define VAXMAXSIZE ((2<<15) - 1);
-
 /*
  * mclear - clear memory.
  */
 void mclear( char *data, int size )
 {
-#ifdef	VAXUNIXASM
-	register int	i = VAXMAXSIZE;
-
-	for ( ; size > i; size -= i, data += i ) {
-		asm( "	movc5 $0,*4(ap),$0,r11,*4(ap)" );
-	}
-	asm( "	movc5 $0,*4(ap),$0,8(ap),*4(ap)" );
-#else
 	for ( ; size > 0; size--, data++ ) {
 		*data = '\0';
 	}
-#endif
 }
 
 
@@ -274,36 +260,6 @@ void mclear( char *data, int size )
  */
 void mcopy( char *from, char *to, int size )
 {
-#ifdef	VAXUNIXASM
-	register int		i = VAXMAXSIZE;
-
-	if ( size < i ) {
-		asm( "	movc3 12(ap),*4(ap),*8(ap)" );
-		return;
-	}
-	else if ( from >= to ) {
-		for ( ; size > i; size -= i, to += i, from += i ) {
-			asm( "	movc3 r11,*4(ap),*8(ap)" );
-		}
-		asm( "	movc3 12(ap),*4(ap),*8(ap)" );
-		return;
-	}
-	else {
-		to   += size;
-		from += size;
-		size -= i;
-		for ( ; size > 0; size -= i ) {
-			to   -= i;
-			from -= i;
-			asm( "	movc3 r11,*4(ap),*8(ap)" );
-		}
-		size += i;
-		to   -= size;
-		from -= size;
-		asm( "	movc3 12(ap),*4(ap),*8(ap)" );
-		return;
-	}
-#else
 	if ( from >= to ) {
 		for ( ; size > 0; size-- ) {
 			*to++ = *from++;
@@ -316,7 +272,6 @@ void mcopy( char *from, char *to, int size )
 			*--to = *--from;
 		}
 	}
-#endif
 }
 
 
@@ -327,24 +282,12 @@ void mcopy( char *from, char *to, int size )
 int
 mcmp( char *from, char *to, int size )
 {
-#ifdef	VAXUNIXASM
-	register int	i = VAXMAXSIZE;
-
-	for ( ; size > i; size -= i, to += i, from += i ) {
-		asm( "	cmpc3 r11,*4(ap),*8(ap)" );
-		asm( "	jeql L_zot_" );
-		asm( "	ret" );
-		asm( "L_zot_:" );
-	}
-	asm( "	cmpc3 12(ap),*4(ap),*8(ap)" );
-#else
 	for ( ; size > 0; size-- ) {
 		if ( *to++ != *from++ ) {
 			return( 1 );
 		}
 	}
 	return( 0 );
-#endif
 }
 
 static void GrabArgs(int argc, char* argv[], char* envp[])
