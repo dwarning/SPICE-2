@@ -39,11 +39,7 @@ void times_( int *iarg )
 void xtime_( char *chr )
 {
 	char		*character;
-#ifdef __MINGW64__
-	long long		tloc,	scum;
-#else
-	long		tloc,	scum;
-#endif
+	time_t		tloc,	scum;
 	int		i;
 
         tloc = time( & scum );
@@ -59,11 +55,7 @@ void xdate_( char *chr )
 {
 	struct	tm	*buffer;
 	char		*month,	*day,	*year;
-#ifdef __MINGW64__
-	long long		tloc,	scum;
-#else
-	long		tloc,	scum;
-#endif
+	time_t		tloc,	scum;
 
         tloc = time( & scum );
         buffer = localtime( & tloc);
@@ -114,6 +106,24 @@ void dblsgl_( double *cstar16, int *numwds )
 	cstar8 = (float *) cstar16;
 	for ( i = 0; i < (*numwds)/4; i++ ) {
 		cstar8[ i ] = cstar16[ 2*i ];
+	}
+}
+/*
+ * cpxmag - convert a complex array (2 x 4Byte) into
+ *  a double precision complex magnitude array.
+
+ * Note that as written here, to get plausible results in
+ * plot file for gaw.
+ */
+#include <math.h>
+void cpxmag_( double *cstar16, int *numwds )
+{
+	float	*cstar8;
+	int	i;
+
+	cstar8 = (float *) cstar16;
+	for ( i = 0; i < (*numwds)/4; i++ ) {
+		cstar16[ i ] = sqrt(cstar8[ 2*i ]*cstar8[ 2*i ] + cstar8[ 2*i+1 ]*cstar8[ 2*i+1 ]);
 	}
 }
 
