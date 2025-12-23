@@ -9,7 +9,9 @@ _pf_data
 SPAGged
 _gxchk.htm
 gxchk.out
+*.fig
 spice
+spice.exe
 *.test
 *.log
 *.exe
