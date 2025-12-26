@@ -109,8 +109,8 @@ void dblsgl_( double *cstar16, int *numwds )
 	}
 }
 /*
- * cpxmag - convert a complex array (2 x 4Byte) into
- *  a double precision complex magnitude array.
+ * cpxmag - convert a complex array (2 x 4 Byte) into
+ *  a double precision magnitude array.
 
  * Note that as written here, to get plausible results in
  * plot file for gaw.

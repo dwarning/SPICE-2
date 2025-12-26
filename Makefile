@@ -6,7 +6,7 @@ FC = gfortran
 ifeq ($(FC),ifx)
 #ifx (prep.: source /opt/intel/oneapi/setvars.sh)
 	FFLAGS = -g -O0 -i8 \
-			-warn all,noerrors,nointerfaces,noexternals,nointerfaces,nounused,nodeclarations \
+			-warn all,noerrors,nointerfaces,noexternals,nounused,nodeclarations \
 			-debug all -traceback
 	#FFLAGS = -g -check uninit -O1
 else
