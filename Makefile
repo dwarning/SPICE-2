@@ -6,10 +6,10 @@ FC = gfortran
 ifeq ($(FC),ifx)
 #ifx (prep.: source /opt/intel/oneapi/setvars.sh)
 	FFLAGS = -g -O0 -i8 \
-			-warn all,noerrors,nointerfaces,noexternals,nounused,nodeclarations \
+			-warn all,nointerfaces,noexternals,nounused,nodeclarations \
 			-debug all -traceback \
 			-save
-	#FFLAGS = -g -check uninit -O1
+#	FFLAGS = -g -i8 -check uninit
 else
 #gfortran
 	FFLAGS = -g -O0 -finteger-4-integer-8 -std=legacy \
@@ -26,6 +26,7 @@ all: spice
 
 spice: $(OBJS)
 	$(FC) $(OBJS) -o spice
+#	$(FC) $(OBJS) -check uninit -o spice
 
 %.o: %.f
 	$(FC) -c $(FFLAGS) $*.f -o $*.o 
