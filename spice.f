@@ -9192,8 +9192,6 @@ C
       VALUE(IBUFF+11)=ADATE
       VALUE(IBUFF+12)=ATIME
       CALL FWRITE(VALUE(IBUFF+1),48)
-      INT2=MODE
-      CALL FWRITE(INT2,1)
       NUMOUT=NUNODS+JELCNT(9)
 C Force nused to be allocated by useless usage.
       int2 = NUMOUT

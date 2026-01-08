@@ -9,6 +9,7 @@ _pf_data
 SPAGged
 _gxchk.htm
 gxchk.out
+*.pf
 fpt
 *.fig
 spice
