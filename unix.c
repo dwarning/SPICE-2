@@ -135,6 +135,7 @@ static int xargc;    /* number of arguments in UNIX command */
 static char **xargv; /* pointer to an array of pointers to
                         arguments in UNIX command line  */
 
+#ifndef __MINGW64__
 /*
  * Open raw data file.  Return 1 if file is opened,
  *  return 0 if file is not opened
@@ -185,6 +186,7 @@ void fwrite_( char* data, int *numwds )
 	fwrite( data, 2, *numwds, rawfile );
 	fflush( rawfile );
 }
+#endif
 
 /*
  * Zero, copy and move for vax unix.
@@ -195,7 +197,6 @@ void move_( char * array1, int *index1, char *array2, int *index2, int *length )
 	array2 += *index2 - 1;
 	mcopy( array2, array1, *length );
 }
-
 
 /*
   Super obnoxious: they are assuming that ints are 4 bytes, doubles 8,

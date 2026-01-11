@@ -18349,3 +18349,77 @@ CC    NPOINT=XN
       CALL CLRMEM(LOCY)
   110 RETURN
       END
+
+C
+C Open raw data file.  Return 1 if file is opened,
+C return 0 if file is not opened
+C
+      integer function iopraw()
+  
+      integer i, iargc, argc
+      character*256 argv, rawfile
+      iopraw = 0
+      argc = iargc()
+      do i = 1, argc
+         call getarg( i, argv )
+         if ( argv .eq. '-r' ) then
+           if ( i < argc ) then
+              call getarg( i+1, argv )
+              rawfile = argv
+              goto 22
+           else
+              rawfile = "rawspice"
+           endif
+         else
+           write(*, 101) argv
+  101 format ('spice: illegal option - ', 1x, a12, ' - ignored')
+           return
+         endif
+      end do
+   22 open(unit=1, file=rawfile, form='unformatted',
+     &access='stream', status='replace', err=1500)
+      iopraw = 1
+      return
+ 1500 write (*,102) rawfile, ios
+  102 format ('SPICE: unable to open file ',a12,' status: ',i5,
+     & 'SPICE:  *** program terminated ***')
+      stop
+
+      end
+
+C 
+C Write into raw file numwds 16 bit words starting
+C at location data
+C 
+      subroutine fwrite(data, numwds)
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+
+      integer numwds
+      integer*2 data(numwds)
+
+c     File-Unit from COMMON-Block
+      COMMON /STATUS/ OMEGA,TIME,DELTA,DELOLD(7),AG(7),VT,XNI,EGFET,
+     1   XMU,SFACTR,MODE,MODEDC,ICALC,INITF,METHOD,IORD,MAXORD,NONCON,
+     2   ITERNO,ITEMNO,NOSOLV,MODAC,IPIV,IVMFLG,IPOSTP,ISCRCH,IOFILE
+
+c     Writing binary (Stream-File assumed)
+      write(ipostp) data
+
+c     Equivalent fflush(rawfile)
+      call flush(ipostp)
+
+      return
+      end
+
+C 
+C Close raw file.
+C 
+      subroutine clsraw()
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+      COMMON /STATUS/ OMEGA,TIME,DELTA,DELOLD(7),AG(7),VT,XNI,EGFET,
+     1   XMU,SFACTR,MODE,MODEDC,ICALC,INITF,METHOD,IORD,MAXORD,NONCON,
+     2   ITERNO,ITEMNO,NOSOLV,MODAC,IPIV,IVMFLG,IPOSTP,ISCRCH,IOFILE
+
+      close(ipostp)
+
+      end
