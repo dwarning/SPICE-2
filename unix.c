@@ -2,36 +2,13 @@
  * SCCSID=unix.c 3/15/83
  */
 #include <stdlib.h>
-#ifndef __MINGW64__
-#include <sys/times.h>
-#endif
+#include <time.h>
 
 /* declarations to avoid warnings */
 void mcopy(char*, char*, int);
 void mclear(char*,int);
 char  *itoc( int );
 
-/*
- * loc_ - return the address of arg
- */
-unsigned long
-loc_( long int *arg )
-{
-	return( (unsigned long) arg );
-}
-
-
-#ifndef __MINGW64__
-/*
- * times_ - c routine to call library routine times
- */
-void times_( int *iarg )
-{
-  times( (struct tms *)iarg );
-}
-#endif
-
-#include <time.h>
 
 /*
  * xtime_ - fortran routine for character time
@@ -108,85 +85,7 @@ void dblsgl_( double *cstar16, int *numwds )
 		cstar8[ i ] = cstar16[ 2*i ];
 	}
 }
-/*
- * cpxmag - convert a complex array (2 x 4 Byte) into
- *  a double precision magnitude array.
 
- * Note that as written here, to get plausible results in
- * plot file for gaw.
- */
-#include <math.h>
-void cpxmag_( double *cstar16, int *numwds )
-{
-	float	*cstar8;
-	int	i;
-
-	cstar8 = (float *) cstar16;
-	for ( i = 0; i < (*numwds)/4; i++ ) {
-		cstar16[ i ] = sqrt(cstar8[ 2*i ]*cstar8[ 2*i ] + cstar8[ 2*i+1 ]*cstar8[ 2*i+1 ]);
-	}
-}
-
-
-#include <stdio.h>
-FILE	*rawfile;  /* pointer to raw file  */
-
-static int xargc;    /* number of arguments in UNIX command */
-static char **xargv; /* pointer to an array of pointers to
-                        arguments in UNIX command line  */
-
-#ifndef __MINGW64__
-/*
- * Open raw data file.  Return 1 if file is opened,
- *  return 0 if file is not opened
- */
-int iopraw_()
-{
-	int	i;
-	char	*filename = NULL;/* name of raw file */
-
-	for ( i=1; i < xargc; i++ ) {
-		if ( *xargv[i] == '-' )
-			switch ( xargv[i][1] )  {
-			case 'r':
-				if ( ++i < xargc )
-					filename = xargv[i];
-				else
-					filename = "rawspice";
-				break;
-			default:
-				fprintf( stderr, "SPICE: illegal option -%c - ignored\n",
-						xargv[i][1] );
-				break;
-			}
-	}
-	if ( filename == NULL )
-		return( 0 );
-	if  ( (rawfile=fopen( filename, "w" )) == NULL ) {
-		fprintf( stderr, "SPICE: unable to open file %s\n", filename );
-		fprintf( stderr, "SPICE:  *** program terminated ***\n" );
-		exit( 1 );  /* terminate program */
-	}
-	return( 1 );  /* normal termination */
-}
-/*
- * Close raw file.
- */
-void clsraw_()
-{
-	fclose( rawfile );
-}
-/*
- * Write into raw file numwds 16 bit words starting
- *  at location data
- */
-void fwrite_( char* data, int *numwds )
-{
-	fflush( stderr );
-	fwrite( data, 2, *numwds, rawfile );
-	fflush( rawfile );
-}
-#endif
 
 /*
  * Zero, copy and move for vax unix.
@@ -264,8 +163,6 @@ void mclear( char *data, int size )
 }
 
 
-
-
 /*
  * mcopy - copy memory.
  */
@@ -286,7 +183,6 @@ void mcopy( char *from, char *to, int size )
 }
 
 
-
 /*
  * mcmp - compare memory.
  */
@@ -300,124 +196,3 @@ mcmp( char *from, char *to, int size )
 	}
 	return( 0 );
 }
-
-static void GrabArgs(int argc, char* argv[], char* envp[])
-{
-    xargc = argc;
-    xargv = argv;
-    /* printf("GrabArgs: copied argc/argv to local variables\n"); */
-}
-
-#ifdef __APPLE__
-    __attribute__((section("__DATA,__mod_init_func"))) void (* PtrGrabArgs)(int,char*[],char*[]) = &GrabArgs;
-#else
-    __attribute__((section(".init_array"))) void (* PtrGrabArgs)(int,char*[],char*[]) = &GrabArgs;
-#endif 
-
-#ifdef MISCTEST
-
-#define TESTSIZE1   31683
-#define TESTSIZE2  147755
-#define TESTSIZE3   69683
-
-#define MISCASSERT(cond) {if(!(cond))\
-printf("Assertion botched line %d: cond\n", __LINE__); }
-
-/*
- * Exercise for misc routines to check that they really work.
- */
-main()
-{
-	int		i,	j;
-	static	char	buff1[ TESTSIZE1 ],	buff2[ TESTSIZE1 ];
-	static	char	buff3[ TESTSIZE2 ],	buff4[ TESTSIZE2 ];
-
-	/*
-	 * First check that everything is zeroed.
-	 *  Assume TESTSIZE1 < TESTSIZE3 < TESTSIZE2
-	 */
-	MISCASSERT( mcmp(buff1, buff2, TESTSIZE1) == 0 );
-	MISCASSERT( mcmp(buff3, buff4, TESTSIZE2) == 0 );
-	MISCASSERT( mcmp(buff1, buff3, TESTSIZE1) == 0 );
-	/*
-	 * Set to all ones, check, clear, check
-	 */
-	for ( i = 0; i < TESTSIZE1; i++ ) {
-		buff1[ i ] = -1;
-	}
-	MISCASSERT( mcmp(buff1, buff2, TESTSIZE1) != 0 );
-	MISCASSERT( mcmp(buff1, buff3, TESTSIZE1) != 0 );
-	mcopy( buff1, buff2, TESTSIZE1 );
-	MISCASSERT( mcmp(buff1, buff2, TESTSIZE1) == 0 );
-	MISCASSERT( mcmp(buff3, buff4, TESTSIZE2) == 0 );
-	for ( i = 0; i < TESTSIZE2; i++ ) {
-		buff3[ i ] = -1;
-	}
-	MISCASSERT( mcmp(buff3, buff4, TESTSIZE2) != 0 );
-	MISCASSERT( mcmp(buff1, buff2, TESTSIZE1) == 0 );
-	MISCASSERT( mcmp(buff1, buff3, TESTSIZE1) == 0 );
-	mcopy( buff3, buff4, TESTSIZE2 );
-	MISCASSERT( mcmp(buff3, buff4, TESTSIZE2) == 0 );
-	MISCASSERT( mcmp(buff1, buff4, TESTSIZE1) == 0 );
-
-	mclear( buff3, TESTSIZE2 );
-	mcopy( buff4, buff3, TESTSIZE2 );
-	MISCASSERT( mcmp(buff3, buff4, TESTSIZE2) == 0 );
-	MISCASSERT( mcmp(buff1, buff3, TESTSIZE1) == 0 );
-
-	mclear( buff2, TESTSIZE1 );
-	MISCASSERT( mcmp(buff3, buff4, TESTSIZE2) == 0 );
-	mclear( buff3, TESTSIZE1 );
-	MISCASSERT( mcmp(buff2, buff3, TESTSIZE1) == 0 );
-	mcopy( buff1, buff3 + TESTSIZE3, TESTSIZE1 );
-	MISCASSERT( mcmp(buff1, buff3 + TESTSIZE3, TESTSIZE1) == 0 );
-	mclear( buff3 + TESTSIZE3, TESTSIZE1 );
-	MISCASSERT( mcmp(buff2, buff3 + TESTSIZE3, TESTSIZE1) == 0 );
-	mcopy( buff3 + TESTSIZE3, buff3, TESTSIZE1 );
-	MISCASSERT( mcmp(buff2, buff3, TESTSIZE1) == 0 );
-	mcopy( buff1, buff3, TESTSIZE1 );
-	mcopy( buff1, buff3 + TESTSIZE3, TESTSIZE1 );
-	mcopy( buff3 + TESTSIZE3, buff3, TESTSIZE1 );
-	MISCASSERT( mcmp(buff1, buff3, TESTSIZE1) == 0 );
-	/*
-	 * Repeat with sequence of numbers in mem locs.
-	 */
-	for ( i = 0; i < TESTSIZE1; i++ ) {
-		buff1[ i ] = i;
-	}
-	MISCASSERT( mcmp(buff1, buff2, TESTSIZE1) != 0 );
-	MISCASSERT( mcmp(buff1, buff3, TESTSIZE1) != 0 );
-	mcopy( buff1, buff2, TESTSIZE1 );
-	MISCASSERT( mcmp(buff1, buff2, TESTSIZE1) == 0 );
-	MISCASSERT( mcmp(buff3, buff4, TESTSIZE2) == 0 );
-	for ( i = 0; i < TESTSIZE2; i++ ) {
-		buff3[ i ] = i;
-	}
-	MISCASSERT( mcmp(buff3, buff4, TESTSIZE2) != 0 );
-	MISCASSERT( mcmp(buff1, buff2, TESTSIZE1) == 0 );
-	MISCASSERT( mcmp(buff1, buff3, TESTSIZE1) == 0 );
-	mcopy( buff3, buff4, TESTSIZE2 );
-	MISCASSERT( mcmp(buff3, buff4, TESTSIZE2) == 0 );
-	MISCASSERT( mcmp(buff1, buff4, TESTSIZE1) == 0 );
-
-	mclear( buff3, TESTSIZE2 );
-	mcopy( buff4, buff3, TESTSIZE2 );
-	MISCASSERT( mcmp(buff3, buff4, TESTSIZE2) == 0 );
-	MISCASSERT( mcmp(buff1, buff3, TESTSIZE1) == 0 );
-
-	mclear( buff2, TESTSIZE1 );
-	MISCASSERT( mcmp(buff3, buff4, TESTSIZE2) == 0 );
-	mclear( buff3, TESTSIZE1 );
-	MISCASSERT( mcmp(buff2, buff3, TESTSIZE1) == 0 );
-	mcopy( buff1, buff3 + TESTSIZE3, TESTSIZE1 );
-	MISCASSERT( mcmp(buff1, buff3 + TESTSIZE3, TESTSIZE1) == 0 );
-	mclear( buff3 + TESTSIZE3, TESTSIZE1 );
-	MISCASSERT( mcmp(buff2, buff3 + TESTSIZE3, TESTSIZE1) == 0 );
-	mcopy( buff3 + TESTSIZE3, buff3, TESTSIZE1 );
-	MISCASSERT( mcmp(buff2, buff3, TESTSIZE1) == 0 );
-	mcopy( buff1, buff3, TESTSIZE1 );
-	mcopy( buff1, buff3 + TESTSIZE3, TESTSIZE1 );
-	mcopy( buff3 + TESTSIZE3, buff3, TESTSIZE1 );
-	MISCASSERT( mcmp(buff1, buff3, TESTSIZE1) == 0 );
-}
-#endif
