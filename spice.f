@@ -5815,7 +5815,7 @@ C
      21X,'LIMPTS PARAMETER ON THE .OPTION CARD'/)
       GO TO 1720
  1710 IF ((JELCNT(31)+JELCNT(36)).GT.0) GO TO 1720
-      IF(IPOSTP.NE.0) GO TO 1720
+      IF(IPOSTP.EQ.2) GO TO 1720
       ICVFLG=0
       WRITE (IOFILE,1711) ALSDC
  1711 FORMAT('WARNING:  NO ',A4,' OUTPUTS SPECIFIED .',
@@ -5828,7 +5828,7 @@ C
       WRITE (IOFILE,1701) LIMPTS,ALSTR
       GO TO 1740
  1730 IF ((JELCNT(32)+JELCNT(37)+NFOUR).GT.0) GO TO 1735
-      IF(IPOSTP.NE.0) GO TO 1735
+      IF(IPOSTP.EQ.2) GO TO 1735
       JTRFLG=0
       WRITE (IOFILE,1711) ALSTR
       GO TO 1740
@@ -5848,7 +5848,7 @@ C
       GO TO 1800
  1750 IF ((JELCNT(33)+JELCNT(34)+JELCNT(35)+JELCNT(38)+JELCNT(39)
      1   +JELCNT(40)+IDIST+INOISE).GT.0) GO TO 1800
-      IF(IPOSTP.NE.0) GO TO 1800
+      IF(IPOSTP.EQ.2) GO TO 1800
       JACFLG=0
       WRITE (IOFILE,1711) ALSAC
 C
@@ -8547,7 +8547,7 @@ C.. SEE IF LX3 AND LX2 TABLES ARE NEEDED
 C
 C.. POST-PROCESSING INITIALIZATION
 C
-      IF(IPOSTP.EQ.0) GO TO 25
+      IF(IPOSTP.NE.2) GO TO 25
       NUMCUR=JELCNT(9)
       NUMPOS=NUNODS+NUMCUR
       CALL GETM8(IBUFF,NUMPOS)
@@ -8639,7 +8639,7 @@ C
 C  ....  DC TRANSFER CURVES
 C
   300 NUMOUT=JELCNT(41)+1
-      IF(IPOSTP.NE.0) CALL PHEADR(ATITLE)
+      IF(IPOSTP.EQ.2) CALL PHEADR(ATITLE)
       ITEMP=ITCELM(1)
       LOCS=NODPLC(ITEMP+1)
       ANAM=VALUE(LOCS)
@@ -8720,7 +8720,7 @@ C
 C
 C  INCREMENT SOURCE VALUE
 C
-  400 IF(IPOSTP.EQ.0) GO TO 410
+  400 IF(IPOSTP.NE.2) GO TO 410
       VALUE(IBUFF+1)=VALUE(LOCS+1)
       CALL COPY8(VALUE(LVNIM1+2),VALUE(IBUFF+2),NUNODS-1)
       IF(NUMCUR.NE.0) CALL COPY8(VALUE(LVNIM1+LOCCUR+1),
@@ -8788,14 +8788,14 @@ C
       CALL TMPUPD
       ITEMNO=1
       CALL RELMEM(ITEMPS,2)
-      IF(IPOSTP.EQ.0) GO TO 1000
+      IF(IPOSTP.NE.2) GO TO 1000
       CALL FWRITE(VALUE(IBUFF+1),NUMPOS)
       GO TO 1000
 C
 C  ....  TRANSIENT ANALYSIS
 C
   500 NUMOUT=JELCNT(42)+1
-      IF(IPOSTP.NE.0) CALL PHEADR(ATITLE)
+      IF(IPOSTP.EQ.2) CALL PHEADR(ATITLE)
 C...  LIMIT DELMAX IF NO ENERGY-STORAGE ELEMENTS
       NUMESE=JELCNT(2)+JELCNT(3)+JELCNT(11)+JELCNT(12)+JELCNT(13)
      1   +JELCNT(14)
@@ -8928,7 +8928,7 @@ C
       VALUE(LOCO+ISEQ)=VALUE(LVNIM1+IPTR)
       LOC=NODPLC(LOC)
       GO TO 670
-  682 IF(IPOSTP.EQ.0) GO TO 684
+  682 IF(IPOSTP.NE.2) GO TO 684
       VALUE(IBUFF+1)=TIME
       CALL COPY8(VALUE(LVNIM1+2),VALUE(IBUFF+2),NUNODS-1)
       IF(NUMCUR.NE.0) CALL COPY8(VALUE(LVNIM1+LOCCUR+1),
@@ -9083,8 +9083,8 @@ C
       RSTATS(30)=RSTATS(30)+NUMTP
       RSTATS(31)=RSTATS(31)+NUMRTP
       RSTATS(32)=RSTATS(32)+NUMNIT
-      IF(IPOSTP.EQ.0) GO TO 1000
-C      IF (IPOSTP.NE.0) CALL CLSRAW
+      IF(IPOSTP.NE.2) GO TO 1000
+CDW      IF (IPOSTP.NE.0) CALL CLSRAW
 C
 C  RETURN UNNEEDED MEMORY
 C
@@ -9111,7 +9111,7 @@ C
       IF (IORD.EQ.4) GO TO 1020
       CALL CLRMEM(LX7)
  1020 CALL EXTMEM(LOUTPT,2*NUMOUT)
- 1100 IF(IPOSTP.NE.0) CALL CLRMEM(IBUFF)
+ 1100 IF(IPOSTP.EQ.2) CALL CLRMEM(IBUFF)
       CALL SECOND(T2)
       RSTATS(LOCTIM)=RSTATS(LOCTIM)+T2-T1
       RETURN
@@ -15157,7 +15157,7 @@ C SPICE VERSION 2G.6  SCCSID=BLANK 3/15/83
       EQUIVALENCE (VALUE(1),NODPLC(1),CVALUE(1))
       CALL SECOND(T1)
 C.. POST-PROCESSOR INITIALIZATION
-      IF(IPOSTP.EQ.0) GO TO 1
+      IF(IPOSTP.NE.2) GO TO 1
       NUMCUR=JELCNT(9)
       NUMPOS=NUNODS+NUMCUR
       CALL GETM16(IBUFF,NUMPOS)
@@ -15185,7 +15185,7 @@ C
       IMYNL=IMVN
       LCVNTP=LVNTMP
       ICALC=0
-      IF (IPOSTP.NE.0) CALL PHEADR(ATITLE)
+      IF (IPOSTP.EQ.2) CALL PHEADR(ATITLE)
       FREQ=FSTART
 C
 C  LOAD Y MATRIX AND C VECTOR, SOLVE FOR V VECTOR
@@ -15223,7 +15223,7 @@ C
       CVALUE(LOCO+ISEQ)=CVALUE(LCVN+IPTR)
       LOC=NODPLC(LOC)
       GO TO 310
-  350 IF(IPOSTP.EQ.0) GO TO 400
+  350 IF(IPOSTP.NE.2) GO TO 400
       CVALUE(IBUFF+1)=CMPLX(SNGL(FREQ),0.0E0)
       CALL COPY16(CVALUE(LCVN+2),CVALUE(IBUFF+2),NUNODS-1)
       IF(NUMCUR.NE.0) CALL COPY16(CVALUE(LCVN+LOCCUR+1),
@@ -15254,9 +15254,9 @@ C
   900 WRITE (IOFILE,901)
   901 FORMAT('*ERROR*:  CPU TIME LIMIT EXCEEDED ... ANALYSIS STOPPED'/)
       NOGO=1
- 1000 IF(IPOSTP.EQ.0) GO TO 1010
-C      IF (IPOSTP.NE.0) CALL CLSRAW
-      IF(IPOSTP.NE.0) CALL CLRMEM(IBUFF)
+ 1000 IF(IPOSTP.NE.2) GO TO 1010
+CDW      IF (IPOSTP.NE.0) CALL CLSRAW
+      IF(IPOSTP.EQ.2) CALL CLRMEM(IBUFF)
  1010 CALL CLRMEM(LVNIM1)
       CALL CLRMEM(LX0)
       CALL CLRMEM(LVN)
@@ -17464,6 +17464,7 @@ C SPICE VERSION 2G.6  SCCSID=BLANK 3/15/83
       EQUIVALENCE (VALUE(1),NODPLC(1),CVALUE(1))
 C
       COMPLEX CVAL
+      DOUBLE COMPLEX cplot(32)
       DIMENSION PRFORM(3)
       DIMENSION SUBTIT(4,3)
       DATA SUBTIT / 8HDC TRANS, 8HFER CURV, 8HES      , 8H        ,
@@ -17514,6 +17515,7 @@ C
 C
 C  PRINT OUTPUTS
 C
+      if (IPOSTP.EQ.3) call pheadr3(ATITLE)
       DO 100 I=1,NUMPNT
       XVAR=VALUE(LOCX+I)
       LOCYT=LOCY
@@ -17522,6 +17524,7 @@ C
       LOCYT=LOCYT+NPOINT
    90 CONTINUE
       WRITE (IOFILE,PRFORM) XVAR,(YVAR(K),K=1,KNTR)
+      if (IPOSTP.EQ.3) write(ipostp) XVAR, (YVAR(K), K=1,KNTR)
   100 CONTINUE
       WRITE (IOFILE,111)
   111 FORMAT(1HY)
@@ -17548,6 +17551,16 @@ C
 C  INTERPOLATE OUTPUTS AND LOAD PLOT BUFFERS
 C
       CALL NTRPL8(LOCX,LOCY,NUMPNT)
+      if (IPOSTP.EQ.3) call pheadr3(ATITLE)
+      DO 101 I=1,NUMPNT
+         XVAR=VALUE(LOCX+I)
+         LOCYT=LOCY
+         DO 91 K=1,KNTR
+            YVAR(K)=VALUE(LOCYT+I)
+            LOCYT=LOCYT+NPOINT
+   91    CONTINUE
+         if (IPOSTP.EQ.3) write(ipostp) XVAR, (YVAR(K), K=1,KNTR)
+  101 CONTINUE
       CALL PLOT(NUMPNT,LOCX,LOCY,LOCV)
       CALL CLRMEM(LOCX)
       CALL CLRMEM(LOCY)
@@ -17575,6 +17588,7 @@ C
 C
 C  PRINT AC OUTPUTS
 C
+      if (IPOSTP.EQ.3) call pheadr3(ATITLE)
       LOUT=LOUTPT
       DO 590 I=1,ICALC
       XVAR=DBLE(REAL(CVALUE(LOUT+1)))
@@ -17582,6 +17596,7 @@ C
       ISEQ=ITAB(K)
       ISEQ=NODPLC(ISEQ+4)
       CVAL=CVALUE(LOUT+ISEQ)
+      cplot(k) = CVAL
       KTYPE=ITYPE(K)
       GO TO (450,450,430,440,450,450), KTYPE
   430 YVAR(K)=DBLE(REAL(CVAL))
@@ -17598,6 +17613,8 @@ C
   500 CONTINUE
       LOUT=LOUT+NUMOUT
   580 WRITE (IOFILE,PRFORM) XVAR,(YVAR(K),K=1,KNTR)
+      if (IPOSTP.EQ.3) write(ipostp) DCMPLX(SNGL(xvar), 0.0),
+     1 (cplot(K),K=1,KNTR)
   590 CONTINUE
       WRITE (IOFILE,111)
   595 LOC=NODPLC(LOC)
@@ -17620,6 +17637,7 @@ C
 C
 C     LOAD PLOT BUFFERS
 C
+      if (IPOSTP.EQ.3) call pheadr3(ATITLE)
       LOUT=LOUTPT
       DO 710 I=1,ICALC
       XVAR=DBLE(REAL(CVALUE(LOUT+1)))
@@ -17628,6 +17646,7 @@ C
       ISEQ=ITAB(K)
       ISEQ=NODPLC(ISEQ+4)
       CVAL=CVALUE(LOUT+ISEQ)
+      cplot(k)=cval
       KTYPE=ITYPE(K)
       GO TO (670,670,650,660,670,670), KTYPE
   650 YVR=DBLE(REAL(CVAL))
@@ -17646,6 +17665,8 @@ C
   700 CONTINUE
       VALUE(LOCX+I)=XVAR
       LOUT=LOUT+NUMOUT
+      if (IPOSTP.EQ.3) write(ipostp) DCMPLX(SNGL(xvar), 0.0),
+     1 (cplot(K),K=1,KNTR)
   710 CONTINUE
       CALL PLOT(ICALC,LOCX,LOCY,LOCV)
       CALL CLRMEM(LOCX)
@@ -18363,25 +18384,34 @@ C
       do i = 1, argc
          call getarg( i, argv )
          if ( argv .eq. '-r' ) then
-           if ( i < argc ) then
-              call getarg( i+1, argv )
-              rawfile = argv
-              goto 22
-           else
-              rawfile = "rawspice"
-           endif
+            if ( i < argc ) then
+               call getarg( i+1, argv )
+               rawfile = argv
+               iopraw = 2
+               goto 22
+            else
+               rawfile = "rawspice"
+            endif
+         else if ( argv .eq. '-r3' ) then
+            if ( i < argc ) then
+               call getarg( i+1, argv )
+               rawfile = argv
+               iopraw = 3
+               goto 22
+            else
+               rawfile = "rawspice"
+            endif
          else
-           write(*, 101) argv
-  101 format ('spice: illegal option - ', 1x, a12, ' - ignored')
-           return
+            write(*, 102) argv
+  102 format ('spice: illegal option - ', 1x, a12, ' - ignored')
+            return
          endif
       end do
-   22 open(unit=1, file=rawfile, form='unformatted',
+   22 open(unit=iopraw, file=rawfile, form='unformatted',
      &access='stream', status='replace', err=1500)
-      iopraw = 1
       return
- 1500 write (*,102) rawfile, ios
-  102 format ('SPICE: unable to open file ',a12,' status: ',i5,
+ 1500 write (*,103) rawfile
+  103 format ('SPICE: unable to open file ',a12,' status: ',
      & 'SPICE:  *** program terminated ***')
       stop
 
@@ -18423,3 +18453,223 @@ C
       close(ipostp)
 
       end
+
+      SUBROUTINE PHEADR3(AHEADR)
+      IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+C SPICE VERSION 2G.6  SCCSID=TABINF 3/15/83
+      COMMON /TABINF/ IELMNT,ISBCKT,NSBCKT,IUNSAT,NUNSAT,ITEMPS,NUMTEM,
+     1   ISENS,NSENS,IFOUR,NFOUR,IFIELD,ICODE,IDELIM,ICOLUM,INSIZE,
+     2   JUNODE,LSBKPT,NUMBKP,IORDER,JMNODE,IUR,IUC,ILC,ILR,NUMOFF,ISR,
+     3   NMOFFC,ISEQ,ISEQ1,NEQN,NODEVS,NDIAG,ISWAP,IEQUA,MACINS,LVNIM1,
+     4   LX0,LVN,LYNL,LYU,LYL,LX1,LX2,LX3,LX4,LX5,LX6,LX7,LD0,LD1,LTD,
+     5   IMYNL,IMVN,LCVN,NSNOD,NSMAT,NSVAL,ICNOD,ICMAT,ICVAL,
+     6   LOUTPT,LPOL,LZER,IRSWPF,IRSWPR,ICSWPF,ICSWPR,IRPT,JCPT,
+     7   IROWNO,JCOLNO,NTTBR,NTTAR,LVNTMP
+C SPICE VERSION 2G.6  SCCSID=CIRDAT 3/15/83
+      COMMON /CIRDAT/ LOCATE(50),JELCNT(50),NUNODS,NCNODS,NUMNOD,NSTOP,
+     1   NUT,NLT,NXTRM,NDIST,NTLIN,IBR,NUMVS,NUMALT,NUMCYC
+C SPICE VERSION 2G.6  SCCSID=STATUS 3/15/83
+      COMMON /STATUS/ OMEGA,TIME,DELTA,DELOLD(7),AG(7),VT,XNI,EGFET,
+     1   XMU,SFACTR,MODE,MODEDC,ICALC,INITF,METHOD,IORD,MAXORD,NONCON,
+     2   ITERNO,ITEMNO,NOSOLV,MODAC,IPIV,IVMFLG,IPOSTP,ISCRCH,IOFILE
+C SPICE VERSION 2G.6  SCCSID=DC 3/15/83
+      COMMON /DC/ TCSTAR(2),TCSTOP(2),TCINCR(2),ICVFLG,ITCELM(2),KSSOP,
+     1   KINEL,KIDIN,KOVAR,KIDOUT
+C SPICE VERSION 2G.6  SCCSID=MISCEL 3/15/83
+      COMMON /MISCEL/ ATIME,APROG(3),ADATE,ATITLE(10),DEFL,DEFW,DEFAD,
+     1  DEFAS,RSTATS(50),IWIDTH,LWIDTH,NOPAGE
+C SPICE VERSION 2G.6  SCCSID=BLANK 3/15/83
+      COMMON /outinf/ Xincr , String(15) , Xstart , Yvar(8) , Itab(8) , 
+     &                Itype(8) , Ilogy(8) , Npoint , Numout , Kntr , 
+     &                Numdgt
+      COMMON /BLANK/ VALUE(1000000)
+      INTEGER NODPLC(64)
+      COMPLEX CVALUE(32)
+C int3 (not used) is strictly for alignment.  f77 on Unix craps out.
+      INTEGER NODPL2(128)
+      EQUIVALENCE (VALUE(1),NODPL2(1))
+      EQUIVALENCE (VALUE(1),NODPLC(1),CVALUE(1))
+      character numbuf*80, numbuf1*9
+      DIMENSION AHEADR(10)
+C
+C  PUT OUT THE HEADER RECORDS ONTO THE POST-PROCESSING FILE
+C  ROUTINE IS USED FOR ALL ANALYSIS MODES (MODE=1,2,3)
+C
+      DIMENSION XTYPE(2)
+      DATA XTYPE /4HTIME,4HFREQ/
+      DATA ABLNK,ALETV,ALETI /1H ,1HV,1HI/
+C
+C File structure for post-processor
+C
+C Record 1  Title card (80 bytes), date (8 bytes), time (8 bytes) TOTAL-96 BYTES
+C Record 2  Number of output variables (including "sweep" variable)
+C Record 3  Integer '4' (2 bytes)
+C Record 4  Names of each output variable (8 bytes ea.)
+C Record 5  Type of each output       0-no type
+C                                     1-time
+C                                     2-frequency
+C                                     3-voltage
+C                                     4-current
+C                                     5-output noise
+C                                     6-input noise
+C                                     7-HD2    |
+C                                     8-HD3    |
+C                                     9-DIM2   }   distortion outputs
+C                                    10-SIM2   |
+C                                    11-DIM3   |
+C Record 6  The location of each variable within each sweep point.
+C           (Normally just 1,2,3,4,... but needed if outputs are mixed up)
+C Record 6a 24 characters that are the plot title if Record 3 is a '4'.
+C Record 7  Output at first sweep point
+C Record 8  Output at second sweep point
+C Record 9  .
+C           .
+C           .
+C last record
+C
+C
+      CALL GETM8(IBUFF,12)
+      CALL COPY8(AHEADR(1),VALUE(IBUFF+1),10)
+
+      write(ipostp) 'Title: '
+      write(numbuf,'(10A8)') (ATITLE(I),I=1,10)
+      write(ipostp) numbuf(1:len_trim(numbuf))
+      write(ipostp) char(10)
+
+      write(ipostp) 'Date: '
+      write(numbuf,'(A8,1X,A8)') ADATE, ATIME
+      write(ipostp) numbuf(1:17)
+      write(ipostp) char(10)
+
+      write(ipostp) 'Plotname: '
+      write(numbuf,'(3A8)') (APROG(I),I=1,3)
+      write(ipostp) numbuf(1:len_trim(numbuf))
+      write(ipostp) char(10)
+
+      NUMOUT=NUNODS+JELCNT(9)
+      CALL GETM8(INAMES,NUMOUT)
+      CALL GETM4(ITYPES,NUMOUT)
+      CALL GETM4(ISEQS,NUMOUT)
+      ITYPE2=ITYPES*2
+      ISEQ2=ISEQS*2
+      IKNT=1
+      NODPL2(ISEQ2+1)=1
+C
+C DC Transfer curve (mode = 1):
+C
+      IF ( Mode.NE.1 ) THEN
+         Value(inames+1) = xtype(Mode-1)
+         Nodpl2(itype2+1) = Mode - 1
+      ELSE
+         loc = Itcelm(1)
+         locv = Nodplc(loc+1)
+         Value(inames+1) = Value(locv)
+         anam = ablnk
+         CALL move(anam,1,Value(locv),1,1)
+         ityp = 0
+C Voltage transfer becomes type 3 and Current transfer becomes 4.
+         IF ( anam.EQ.aletv ) ityp = 3
+         IF ( anam.EQ.aleti ) ityp = 4
+         Nodpl2(itype2+1) = ityp
+      ENDIF
+      DO i = 2 , Nunods
+         Nodpl2(itype2+i) = 3
+         Nodpl2(iseq2+i) = i
+         Value(inames+i) = ablnk
+         ipos = 1
+         CALL alfnum(Nodplc(Junode+i),Value(inames+i),ipos)
+      ENDDO
+      loc = Locate(9)
+      iknt = Nunods
+      DO WHILE ( loc.NE.0 )
+         iknt = iknt + 1
+         Nodpl2(itype2+iknt) = 4
+         Nodpl2(iseq2+iknt) = iknt
+         locv = Nodplc(loc+1)
+         Value(inames+iknt) = Value(locv)
+         loc = Nodplc(loc)
+      ENDDO
+
+   50 if ((MODE.EQ.1) .OR. (MODE.EQ.2)) then
+         write(ipostp) 'Flags: real'
+      else
+         write(ipostp) 'Flags: complex'
+      endif
+      write(ipostp) char(10)
+
+      write(ipostp) 'No. Variables: '
+      write(numbuf,'(I8)') KNTR+1
+      write(ipostp) numbuf(1:8)
+      write(ipostp) char(10)
+
+      write(ipostp) 'No. Points: '
+      write(numbuf,'(I8)') Npoint
+      write(ipostp) numbuf(1:8)
+      write(ipostp) char(10)
+
+      write(ipostp) 'Variables:'
+      write(ipostp) char(10)
+
+      DO I = 1,NUMOUT
+         write(numbuf,'(I8,1X)') NODPL2(ISEQ2+I)
+         write(ipostp) numbuf(1:9)
+         write(numbuf,'(A8,1X)') VALUE(INAMES+I)
+C      write(iofile,*) i, numbuf,NODPL2(ITYPE2+I)
+         write(ipostp) numbuf(1:9)
+         if (NODPL2(ITYPE2+I).eq.1) then
+            write(ipostp) 'time'
+            write(ipostp) char(10)
+            exit
+         else if (NODPL2(ITYPE2+I).eq.2) then
+            write(ipostp) 'frequency'
+            write(ipostp) char(10)
+            exit
+         else if (NODPL2(ITYPE2+I).eq.3) then
+            write(ipostp) 'voltage'
+            write(ipostp) char(10)
+            exit
+         else if (NODPL2(ITYPE2+I).eq.4) then
+            write(ipostp) 'current'
+            write(ipostp) char(10)
+            exit
+         endif
+      END DO
+
+      write(iofile,*) 'outs: ', Npoint, NUMOUT, KNTR
+      WRITE (IOFILE,91) (STRING(J),J=1,KNTR+1)
+   91 FORMAT(1X,14(1H>,A8,1H<))
+      j = 1
+      DO I = 1,KNTR+1
+         write(numbuf,'(A8,1X)') STRING(I)
+         numbuf = adjustl(numbuf)
+         k = ichar(numbuf(1:1))
+         if ((k.ne.32).and.(k.ne.0)) then
+            j = j+1
+            write(numbuf1,'(I8,1X)') j
+            write(ipostp) numbuf1(1:9)
+            if (numbuf(1:2).eq.'V(') THEN
+               write(ipostp) numbuf(1:9)
+               write(ipostp) 'voltage'
+            else if (numbuf(1:2).eq.'I(') THEN
+               write(ipostp) numbuf(1:9)
+               write(ipostp) 'current'
+            else if (numbuf(1:2).eq.'ON') THEN
+               write(ipostp) numbuf(1:9)
+               write(ipostp) 'onoise'
+            else if (numbuf(1:2).eq.'IN') THEN
+               write(ipostp) numbuf(1:9)
+               write(ipostp) 'inoise'
+            endif
+            write(ipostp) char(10)
+         endif
+      END DO
+
+      write(ipostp) 'Binary:'
+      write(ipostp) char(10)
+
+      CALL CLRMEM(IBUFF)
+      CALL CLRMEM(INAMES)
+      CALL CLRMEM(ITYPES)
+      CALL CLRMEM(ISEQS)
+      RETURN
+      END
