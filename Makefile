@@ -1,15 +1,17 @@
 CC = gcc
 CFLAGS = -g -O0 -Wno-error
-#FC = ifx
-FC = gfortran
+FC = ifx
+#FC = gfortran
 
 ifeq ($(FC),ifx)
 #ifx (prep.: source /opt/intel/oneapi/setvars.sh)
 	FFLAGS = -g -O0 -i8 \
 			-warn all,nointerfaces,noexternals,nounused,nodeclarations \
 			-debug all -traceback \
+			-nogen-interfaces \
 			-save
-#	FFLAGS = -g -i8 -check uninit
+#			-check uninit
+#			-check bounds
 else
 #gfortran
 	FFLAGS = -g -O0 -finteger-4-integer-8 -std=legacy \
