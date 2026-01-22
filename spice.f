@@ -9244,6 +9244,7 @@ C Voltage transfer becomes type 3 and Current transfer becomes 4.
       CALL FWRITE(INT2,1)
       NWDS=NUMOUT*4
       CALL FWRITE(VALUE(INAMES+1),NWDS)
+CDW Adapt SPICE2 header format: 2 bytes for types and order
       DO I = 1,NUMOUT
         INT2 = NODPL2(ITYPE2+I)
         CALL FWRITE(INT2,1)
@@ -17464,7 +17465,6 @@ C SPICE VERSION 2G.6  SCCSID=BLANK 3/15/83
       EQUIVALENCE (VALUE(1),NODPLC(1),CVALUE(1))
 C
       COMPLEX CVAL
-      DOUBLE COMPLEX cplot(32)
       DIMENSION PRFORM(3)
       DIMENSION SUBTIT(4,3)
       DATA SUBTIT / 8HDC TRANS, 8HFER CURV, 8HES      , 8H        ,
@@ -17551,16 +17551,19 @@ C
 C  INTERPOLATE OUTPUTS AND LOAD PLOT BUFFERS
 C
       CALL NTRPL8(LOCX,LOCY,NUMPNT)
-      if (IPOSTP.EQ.3) call pheadr3(ATITLE)
-      DO 101 I=1,NUMPNT
-         XVAR=VALUE(LOCX+I)
-         LOCYT=LOCY
-         DO 91 K=1,KNTR
-            YVAR(K)=VALUE(LOCYT+I)
-            LOCYT=LOCYT+NPOINT
-   91    CONTINUE
-         if (IPOSTP.EQ.3) write(ipostp) XVAR, (YVAR(K), K=1,KNTR)
-  101 CONTINUE
+CDW Collect and write x and y values for spice3 raw file
+      if (IPOSTP.EQ.3) then
+         call pheadr3(ATITLE)
+         do i=1,numpnt
+            xvar=value(locx+i)
+            locyt=locy
+            do k=1,kntr
+               yvar(k)=value(locyt+i)
+               locyt=locyt+npoint
+            enddo
+            write(ipostp) xvar, (yvar(k), k=1,kntr)
+         enddo
+      endif
       CALL PLOT(NUMPNT,LOCX,LOCY,LOCV)
       CALL CLRMEM(LOCX)
       CALL CLRMEM(LOCY)
@@ -17596,7 +17599,6 @@ C
       ISEQ=ITAB(K)
       ISEQ=NODPLC(ISEQ+4)
       CVAL=CVALUE(LOUT+ISEQ)
-      cplot(k) = CVAL
       KTYPE=ITYPE(K)
       GO TO (450,450,430,440,450,450), KTYPE
   430 YVAR(K)=DBLE(REAL(CVAL))
@@ -17613,8 +17615,7 @@ C
   500 CONTINUE
       LOUT=LOUT+NUMOUT
   580 WRITE (IOFILE,PRFORM) XVAR,(YVAR(K),K=1,KNTR)
-      if (IPOSTP.EQ.3) write(ipostp) DCMPLX(SNGL(xvar), 0.0),
-     1 (cplot(K),K=1,KNTR)
+      if (IPOSTP.EQ.3) write(ipostp) XVAR,(YVAR(K),K=1,KNTR)
   590 CONTINUE
       WRITE (IOFILE,111)
   595 LOC=NODPLC(LOC)
@@ -17646,7 +17647,6 @@ C
       ISEQ=ITAB(K)
       ISEQ=NODPLC(ISEQ+4)
       CVAL=CVALUE(LOUT+ISEQ)
-      cplot(k)=cval
       KTYPE=ITYPE(K)
       GO TO (670,670,650,660,670,670), KTYPE
   650 YVR=DBLE(REAL(CVAL))
@@ -17662,11 +17662,11 @@ C
   690 YVR=XPHS
   695 VALUE(LOCYT+I)=YVR
       LOCYT=LOCYT+ICALC
+      yvar(k)=YVR
   700 CONTINUE
       VALUE(LOCX+I)=XVAR
       LOUT=LOUT+NUMOUT
-      if (IPOSTP.EQ.3) write(ipostp) DCMPLX(SNGL(xvar), 0.0),
-     1 (cplot(K),K=1,KNTR)
+      if (IPOSTP.EQ.3) write(ipostp) XVAR,(yvar(K),K=1,KNTR)
   710 CONTINUE
       CALL PLOT(ICALC,LOCX,LOCY,LOCV)
       CALL CLRMEM(LOCX)
@@ -17916,6 +17916,7 @@ C SPICE VERSION 2G.6  SCCSID=BLANK 3/15/83
       INTEGER NODPLC(64)
       COMPLEX CVALUE(32)
       EQUIVALENCE (VALUE(1),NODPLC(1),CVALUE(1))
+      double precision allstring(15)
 C
       DIMENSION LOGOPT(6)
       DATA LOGOPT / 2, 2, 1, 1, 1, 1 /
@@ -17960,6 +17961,8 @@ C
    50 IPOS=1
       CALL OUTNAM(ITAB(I),ITYPE(I),STRING,IPOS)
       CALL MOVE(STRING,IPOS,ABLNK,1,7)
+CDW Collect all wanted plot signals in array
+      allstring(i) = STRING(1)
       JSTOP=(IPOS+6)/8
       CALL MOVE(ACHAR,1,PLTSYM,I,1)
       WRITE (IOFILE,61) ACHAR,(STRING(J),J=1,JSTOP)
@@ -17978,6 +17981,12 @@ C
       JSTOP=(IPOS+6)/8
       WRITE (IOFILE,101) ASWEEP,(STRING(J),J=1,JSTOP)
   101 FORMAT(1HX/3X,A8,4X,5A8)
+CDW Transfer the plot signals into STRING array
+      IF ( KNTR.NE.1 ) THEN
+         do i = 1, KNTR
+            STRING(i) = allstring(i)
+         enddo
+      endif
       RETURN
       END
       SUBROUTINE PLOT(NUMPNT,LOCX,LOCY,LOCV)
@@ -18485,11 +18494,13 @@ C SPICE VERSION 2G.6  SCCSID=BLANK 3/15/83
       COMMON /BLANK/ VALUE(1000000)
       INTEGER NODPLC(64)
       COMPLEX CVALUE(32)
-C int3 (not used) is strictly for alignment.  f77 on Unix craps out.
       INTEGER NODPL2(128)
       EQUIVALENCE (VALUE(1),NODPL2(1))
       EQUIVALENCE (VALUE(1),NODPLC(1),CVALUE(1))
-      character numbuf*80, numbuf1*9
+      character*120 rawstring
+      equivalence (String(1), rawstring)
+      character numbuf*9, varbuf*80
+      integer ipos
       DIMENSION AHEADR(10)
 C
 C  PUT OUT THE HEADER RECORDS ONTO THE POST-PROCESSING FILE
@@ -18532,21 +18543,20 @@ C
       CALL COPY8(AHEADR(1),VALUE(IBUFF+1),10)
 
       write(ipostp) 'Title: '
-      write(numbuf,'(10A8)') (ATITLE(I),I=1,10)
-      write(ipostp) numbuf(1:len_trim(numbuf))
+      write(varbuf,'(10A8)') (ATITLE(I),I=1,10)
+      write(ipostp) varbuf(1:len_trim(varbuf))
       write(ipostp) char(10)
 
       write(ipostp) 'Date: '
-      write(numbuf,'(A8,1X,A8)') ADATE, ATIME
-      write(ipostp) numbuf(1:17)
+      write(varbuf,'(A8,1X,A8)') ADATE, ATIME
+      write(ipostp) varbuf(1:17)
       write(ipostp) char(10)
 
       write(ipostp) 'Plotname: '
-      write(numbuf,'(3A8)') (APROG(I),I=1,3)
-      write(ipostp) numbuf(1:len_trim(numbuf))
+      write(varbuf,'(3A8)') (APROG(I),I=1,3)
+      write(ipostp) varbuf(1:len_trim(varbuf))
       write(ipostp) char(10)
-
-      NUMOUT=NUNODS+JELCNT(9)
+C      write(iofile,*) 'NUMOUT: ', NUMOUT
       CALL GETM8(INAMES,NUMOUT)
       CALL GETM4(ITYPES,NUMOUT)
       CALL GETM4(ISEQS,NUMOUT)
@@ -18590,86 +18600,109 @@ C Voltage transfer becomes type 3 and Current transfer becomes 4.
          loc = Nodplc(loc)
       ENDDO
 
-   50 if ((MODE.EQ.1) .OR. (MODE.EQ.2)) then
-         write(ipostp) 'Flags: real'
-      else
-         write(ipostp) 'Flags: complex'
-      endif
-      write(ipostp) char(10)
+      write(ipostp) 'Flags: real'//char(10)
 
-      write(ipostp) 'No. Variables: '
-      write(numbuf,'(I8)') KNTR+1
-      write(ipostp) numbuf(1:8)
-      write(ipostp) char(10)
+      write(ipostp) 'No. Variables:'
+      write(numbuf,'(I8)') Kntr+1
+      write(ipostp) numbuf(1:8)//char(10)
 
       write(ipostp) 'No. Points: '
       write(numbuf,'(I8)') Npoint
-      write(ipostp) numbuf(1:8)
-      write(ipostp) char(10)
+      write(ipostp) numbuf(1:8)//char(10)
 
-      write(ipostp) 'Variables:'
-      write(ipostp) char(10)
+      write(ipostp) 'Variables:'//char(10)
 
       DO I = 1,NUMOUT
-         write(numbuf,'(I8,1X)') NODPL2(ISEQ2+I)
+         write(numbuf,'(I8,1X)') 1
          write(ipostp) numbuf(1:9)
-         write(numbuf,'(A8,1X)') VALUE(INAMES+I)
-C      write(iofile,*) i, numbuf,NODPL2(ITYPE2+I)
-         write(ipostp) numbuf(1:9)
+         write(varbuf,'(A8,1X)') VALUE(INAMES+I)
+         write(ipostp) varbuf(1:9)
          if (NODPL2(ITYPE2+I).eq.1) then
-            write(ipostp) 'time'
-            write(ipostp) char(10)
+            write(ipostp) 'time'//char(10)
             exit
          else if (NODPL2(ITYPE2+I).eq.2) then
-            write(ipostp) 'frequency'
-            write(ipostp) char(10)
+            write(ipostp) 'frequency'//char(10)
             exit
          else if (NODPL2(ITYPE2+I).eq.3) then
-            write(ipostp) 'voltage'
-            write(ipostp) char(10)
+            write(ipostp) 'voltage'//char(10)
             exit
          else if (NODPL2(ITYPE2+I).eq.4) then
-            write(ipostp) 'current'
-            write(ipostp) char(10)
+            write(ipostp) 'current'//char(10)
             exit
          endif
       END DO
 
-      write(iofile,*) 'outs: ', Npoint, NUMOUT, KNTR
-      WRITE (IOFILE,91) (STRING(J),J=1,KNTR+1)
-   91 FORMAT(1X,14(1H>,A8,1H<))
-      j = 1
-      DO I = 1,KNTR+1
-         write(numbuf,'(A8,1X)') STRING(I)
-         numbuf = adjustl(numbuf)
-         k = ichar(numbuf(1:1))
-         if ((k.ne.32).and.(k.ne.0)) then
-            j = j+1
-            write(numbuf1,'(I8,1X)') j
-            write(ipostp) numbuf1(1:9)
-            if (numbuf(1:2).eq.'V(') THEN
+C      write(iofile,*) rawstring
+C      write(iofile,*) 'KNTR: ', KNTR
+      ipos = 1
+      do i = 1, kntr
+         call get_varname(rawstring, ipos, varbuf)
+         varbuf = adjustl(varbuf)
+C      write(iofile,'(A)') varbuf(1:len_trim(varbuf))
+         j = ichar(varbuf(1:1))
+         if ((j.eq.86).or.(j.eq.73).or.(j.eq.79)) then
+            if (varbuf(1:2).eq.'IN') then
+               write(numbuf,'(I8,1X)') i+1
                write(ipostp) numbuf(1:9)
-               write(ipostp) 'voltage'
-            else if (numbuf(1:2).eq.'I(') THEN
+               write(ipostp) varbuf(1:11)
+               write(ipostp) 'inoise'//char(10)
+            else if (varbuf(1:2).eq.'ON') then
+               write(numbuf,'(I8,1X)') i+1
                write(ipostp) numbuf(1:9)
-               write(ipostp) 'current'
-            else if (numbuf(1:2).eq.'ON') THEN
+               write(ipostp) varbuf(1:11)
+               write(ipostp) 'onoise'//char(10)
+            else if (varbuf(1:1).eq.'V') then
+               write(numbuf,'(I8,1X)') i+1
                write(ipostp) numbuf(1:9)
-               write(ipostp) 'onoise'
-            else if (numbuf(1:2).eq.'IN') THEN
+               write(ipostp) varbuf(1:11)
+               write(ipostp) 'voltage'//char(10)
+            else if (varbuf(1:1).eq.'I') then
+               write(numbuf,'(I8,1X)') i+1
                write(ipostp) numbuf(1:9)
-               write(ipostp) 'inoise'
+               write(ipostp) varbuf(1:11)
+               write(ipostp) 'current'//char(10)
             endif
-            write(ipostp) char(10)
          endif
-      END DO
+      enddo
 
-      write(ipostp) 'Binary:'
-      write(ipostp) char(10)
+      write(ipostp) 'Binary:'//char(10)
 
       CALL CLRMEM(IBUFF)
       CALL CLRMEM(INAMES)
       CALL CLRMEM(ITYPES)
       CALL CLRMEM(ISEQS)
+      RETURN
+      END
+      SUBROUTINE GET_VARNAME(RAW, IPOS, NAME)
+      CHARACTER*(*) RAW
+      CHARACTER*(*) NAME
+      INTEGER IPOS
+
+      INTEGER LRAW, K
+      CHARACTER*1 C
+
+      LRAW = LEN(RAW)
+      NAME = ' '
+      K = 1
+
+c     Führende Blanks ODER NULs überspringen
+ 10   IF (IPOS .GT. LRAW) RETURN
+      C = RAW(IPOS:IPOS)
+      IF (C .EQ. ' ' .OR. ICHAR(C) .EQ. 0) THEN
+         IPOS = IPOS + 1
+         GOTO 10
+      ENDIF
+
+c     Zeichen sammeln bis Blank ODER NUL
+ 20   IF (IPOS .GT. LRAW) GOTO 30
+      C = RAW(IPOS:IPOS)
+      IF (C .EQ. ' ' .OR. ICHAR(C) .EQ. 0) GOTO 30
+
+      NAME(K:K) = C
+      K = K + 1
+      IPOS = IPOS + 1
+      GOTO 20
+
+ 30   CONTINUE
       RETURN
       END
