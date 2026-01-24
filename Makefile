@@ -1,41 +1,92 @@
 CC = gcc
-CFLAGS = -g -O0 -Wno-error
-#FC = ifx
-FC = gfortran
 
-ifeq ($(FC),ifx)
-#ifx (prep.: source /opt/intel/oneapi/setvars.sh)
-	FFLAGS = -g -O0 -i8 \
-			-warn all,nointerfaces,noexternals,nounused,nodeclarations \
-			-debug all -traceback \
-			-nogen-interfaces \
-			-save
-#			-check uninit
-#			-check bounds
+# -----------------------------
+# Defaults
+# -----------------------------
+BUILD    ?= release
+COMPILER ?= gfortran
+
+# -----------------------------
+# C flags
+# -----------------------------
+CFLAGS = -Wno-error
+
+ifeq ($(BUILD),debug)
+    CFLAGS += -g -O0
 else
-#gfortran
-	FFLAGS = -g -O0 -finteger-4-integer-8 -std=legacy \
-			-Wall -Wextra -Wuninitialized -Wno-argument-mismatch \
-			-fno-automatic
-#			-fallow-argument-mismatch \
-#			-fdec-char-conversions \
-#			-malign-double
+    CFLAGS += -O2
 endif
 
+# -----------------------------
+# Fortran compiler + flags
+# -----------------------------
+ifeq ($(COMPILER),ifx)
+#ifx (prep.: source /opt/intel/oneapi/setvars.sh)
+
+    FC = ifx
+
+    ifeq ($(BUILD),debug)
+        FFLAGS = -g -O0 -i8 \
+                 -warn all,nointerfaces,noexternals,nounused,nodeclarations \
+                 -debug all -traceback \
+                 -nogen-interfaces \
+                 -save
+#                 -check uninit
+#                 -check bounds
+    else
+        FFLAGS = -O1 -i8 \
+                 -nogen-interfaces \
+                 -save
+    endif
+
+else
+    # -------- gfortran (default) --------
+    FC = gfortran
+
+    FFLAGS_COMMON = -finteger-4-integer-8 -std=legacy -fno-automatic
+
+    ifeq ($(BUILD),debug)
+        FFLAGS = -g -O0 $(FFLAGS_COMMON) \
+                 -Wall -Wextra -Wuninitialized -Wno-argument-mismatch
+#                 -fcheck=all \
+#                 -fbacktrace \
+#                 -ffpe-trap=invalid,zero,overflow \
+#                 -finit-real=snan -finit-integer=-999999
+#                 -fallow-argument-mismatch \
+#                 -malign-double
+    else
+        FFLAGS = -O1 $(FFLAGS_COMMON) \
+                 -Wno-argument-mismatch
+#                 -fno-strict-aliasing \
+#                 -fno-aggressive-loop-optimizations
+    endif
+endif
+
+# -----------------------------
+# Objects & targets
+# -----------------------------
 OBJS = spice.o unix.o
 
+.PHONY: all debug release clean
+
 all: spice
+
+# Convenience targets
+debug:
+	$(MAKE) BUILD=debug
+
+release:
+	$(MAKE) BUILD=release
 
 spice: $(OBJS)
 	$(FC) $(OBJS) -o spice
 #	$(FC) $(OBJS) -check uninit -o spice
 
 %.o: %.f
-	$(FC) -c $(FFLAGS) $*.f -o $*.o 
+	$(FC) -c $(FFLAGS) $< -o $@
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $*.c -o $*.o
+	$(CC) -c $(CFLAGS) $< -o $@
 
 clean:
 	rm -f $(OBJS) spice
-
