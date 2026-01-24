@@ -18499,7 +18499,7 @@ C SPICE VERSION 2G.6  SCCSID=BLANK 3/15/83
       EQUIVALENCE (VALUE(1),NODPLC(1),CVALUE(1))
       character*120 rawstring
       equivalence (String(1), rawstring)
-      character numbuf*9, varbuf*80
+      character numbuf*8, varbuf*80
       integer ipos
       DIMENSION AHEADR(10)
 C
@@ -18510,52 +18510,46 @@ C
       DATA XTYPE /4HTIME,4HFREQ/
       DATA ABLNK,ALETV,ALETI /1H ,1HV,1HI/
 C
-C File structure for post-processor
+C File structure for post-processor spice3 raw file
 C
-C Record 1  Title card (80 bytes), date (8 bytes), time (8 bytes) TOTAL-96 BYTES
-C Record 2  Number of output variables (including "sweep" variable)
-C Record 3  Integer '4' (2 bytes)
-C Record 4  Names of each output variable (8 bytes ea.)
-C Record 5  Type of each output       0-no type
-C                                     1-time
-C                                     2-frequency
-C                                     3-voltage
-C                                     4-current
-C                                     5-output noise
-C                                     6-input noise
-C                                     7-HD2    |
-C                                     8-HD3    |
-C                                     9-DIM2   }   distortion outputs
-C                                    10-SIM2   |
-C                                    11-DIM3   |
-C Record 6  The location of each variable within each sweep point.
-C           (Normally just 1,2,3,4,... but needed if outputs are mixed up)
-C Record 6a 24 characters that are the plot title if Record 3 is a '4'.
-C Record 7  Output at first sweep point
-C Record 8  Output at second sweep point
-C Record 9  .
+C Title: Title card (80 bytes)
+C Date: date (8 bytes), time (8 bytes)
+C Plotname: Plotname (24 bytes)
+C Flags: kind of data (real or complex) (8 bytes)
+C No. Variables: Number output variables (incl. "sweep" variable) (8 bytes)
+C No. Points: Number of data points (8 bytes)
+C Variables:
+C 	location	Name of independent variable	Type
+C 	location	Name of 1. dependent variable	Type
+C 	location	Name of 2. dependent variable	Type
+C                 .
+C 	location	Name of N. dependent variable	type
+C               Type of each output       0-no type
+C                                         1-time
+C                                         2-frequency
+C                                         3-voltage
+C                                         4-current
+C                                         5-output noise
+C                                         6-input noise
+C Binary: Begin of data section
+C       Output at first sweep point
+C       Output at second sweep point
 C           .
 C           .
 C last record
-C
 C
       CALL GETM8(IBUFF,12)
       CALL COPY8(AHEADR(1),VALUE(IBUFF+1),10)
 
       write(ipostp) 'Title: '
       write(varbuf,'(10A8)') (ATITLE(I),I=1,10)
-      write(ipostp) varbuf(1:len_trim(varbuf))
-      write(ipostp) char(10)
-
+      write(ipostp) varbuf(1:len_trim(varbuf))//char(10)
       write(ipostp) 'Date: '
       write(varbuf,'(A8,1X,A8)') ADATE, ATIME
-      write(ipostp) varbuf(1:17)
-      write(ipostp) char(10)
-
+      write(ipostp) varbuf(1:len_trim(varbuf))//char(10)
       write(ipostp) 'Plotname: '
       write(varbuf,'(3A8)') (APROG(I),I=1,3)
-      write(ipostp) varbuf(1:len_trim(varbuf))
-      write(ipostp) char(10)
+      write(ipostp) varbuf(1:len_trim(varbuf))//char(10)
 C      write(iofile,*) 'NUMOUT: ', NUMOUT
       CALL GETM8(INAMES,NUMOUT)
       CALL GETM4(ITYPES,NUMOUT)
@@ -18606,17 +18600,17 @@ C Voltage transfer becomes type 3 and Current transfer becomes 4.
       write(numbuf,'(I8)') Kntr+1
       write(ipostp) numbuf(1:8)//char(10)
 
-      write(ipostp) 'No. Points: '
+      write(ipostp) 'No. Points:'
       write(numbuf,'(I8)') Npoint
       write(ipostp) numbuf(1:8)//char(10)
 
       write(ipostp) 'Variables:'//char(10)
-
       DO I = 1,NUMOUT
-         write(numbuf,'(I8,1X)') 1
-         write(ipostp) numbuf(1:9)
-         write(varbuf,'(A8,1X)') VALUE(INAMES+I)
-         write(ipostp) varbuf(1:9)
+         write(numbuf,'(I8)') 0
+         numbuf = adjustl(numbuf)
+         write(ipostp) char(9)//numbuf(1:len_trim(numbuf))//char(9)
+         write(varbuf,'(A8)') VALUE(INAMES+I)
+         write(ipostp) varbuf(1:len_trim(varbuf))//char(9)
          if (NODPL2(ITYPE2+I).eq.1) then
             write(ipostp) 'time'//char(10)
             exit
@@ -18640,27 +18634,22 @@ C      write(iofile,*) 'KNTR: ', KNTR
          varbuf = adjustl(varbuf)
 C      write(iofile,'(A)') varbuf(1:len_trim(varbuf))
          j = ichar(varbuf(1:1))
+         write(numbuf,'(I8)') i
+         numbuf = adjustl(numbuf)
+         write(ipostp) char(9)//numbuf(1:len_trim(numbuf))//char(9)
          if ((j.eq.86).or.(j.eq.73).or.(j.eq.79)) then
             if (varbuf(1:2).eq.'IN') then
-               write(numbuf,'(I8,1X)') i+1
-               write(ipostp) numbuf(1:9)
-               write(ipostp) varbuf(1:11)
-               write(ipostp) 'inoise'//char(10)
+               write(ipostp) varbuf(1:len_trim(varbuf))
+               write(ipostp) char(9)//'inoise'//char(10)
             else if (varbuf(1:2).eq.'ON') then
-               write(numbuf,'(I8,1X)') i+1
-               write(ipostp) numbuf(1:9)
-               write(ipostp) varbuf(1:11)
-               write(ipostp) 'onoise'//char(10)
+               write(ipostp) varbuf(1:len_trim(varbuf))
+               write(ipostp) char(9)//'onoise'//char(10)
             else if (varbuf(1:1).eq.'V') then
-               write(numbuf,'(I8,1X)') i+1
-               write(ipostp) numbuf(1:9)
-               write(ipostp) varbuf(1:11)
-               write(ipostp) 'voltage'//char(10)
+               write(ipostp) varbuf(1:len_trim(varbuf))
+               write(ipostp) char(9)//'voltage'//char(10)
             else if (varbuf(1:1).eq.'I') then
-               write(numbuf,'(I8,1X)') i+1
-               write(ipostp) numbuf(1:9)
-               write(ipostp) varbuf(1:11)
-               write(ipostp) 'current'//char(10)
+               write(ipostp) varbuf(1:len_trim(varbuf))
+               write(ipostp) char(9)//'current'//char(10)
             endif
          endif
       enddo

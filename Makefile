@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -g -O0 -Wno-error
-FC = ifx
-#FC = gfortran
+#FC = ifx
+FC = gfortran
 
 ifeq ($(FC),ifx)
 #ifx (prep.: source /opt/intel/oneapi/setvars.sh)
