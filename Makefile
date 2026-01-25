@@ -3,19 +3,8 @@ CC = gcc
 # -----------------------------
 # Defaults
 # -----------------------------
-BUILD    ?= release
+BUILD    ?= debug
 COMPILER ?= gfortran
-
-# -----------------------------
-# C flags
-# -----------------------------
-CFLAGS = -Wno-error
-
-ifeq ($(BUILD),debug)
-    CFLAGS += -g -O0
-else
-    CFLAGS += -O2
-endif
 
 # -----------------------------
 # Fortran compiler + flags
@@ -65,7 +54,7 @@ endif
 # -----------------------------
 # Objects & targets
 # -----------------------------
-OBJS = spice.o unix.o
+OBJS = spice.o
 
 .PHONY: all debug release clean
 
@@ -84,9 +73,6 @@ spice: $(OBJS)
 
 %.o: %.f
 	$(FC) -c $(FFLAGS) $< -o $@
-
-%.o: %.c
-	$(CC) -c $(CFLAGS) $< -o $@
 
 clean:
 	rm -f $(OBJS) spice
