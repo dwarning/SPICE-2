@@ -3,7 +3,7 @@ CC = gcc
 # -----------------------------
 # Defaults
 # -----------------------------
-BUILD    ?= release
+BUILD    ?= debug
 COMPILER ?= gfortran
 
 # -----------------------------
