@@ -25,18 +25,16 @@ ifeq ($(COMPILER),ifx)
 
     FC = ifx
 
+    FFLAGS_COMMON = -i8 -save -nogen-interfaces
+
     ifeq ($(BUILD),debug)
-        FFLAGS = -g -O0 -i8 \
+        FFLAGS = -g -O0 $(FFLAGS_COMMON) \
                  -warn all,nointerfaces,noexternals,nounused,nodeclarations \
                  -debug all -traceback \
-                 -nogen-interfaces \
-                 -save
 #                 -check uninit
 #                 -check bounds
     else
-        FFLAGS = -O1 -i8 \
-                 -nogen-interfaces \
-                 -save
+        FFLAGS = -O1 $(FFLAGS_COMMON)
     endif
 
 else
@@ -52,8 +50,6 @@ else
 #                 -fbacktrace \
 #                 -ffpe-trap=invalid,zero,overflow \
 #                 -finit-real=snan -finit-integer=-999999
-#                 -fallow-argument-mismatch \
-#                 -malign-double
     else
         FFLAGS = -O1 $(FFLAGS_COMMON) \
                  -Wno-argument-mismatch

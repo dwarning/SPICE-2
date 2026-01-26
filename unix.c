@@ -2,89 +2,10 @@
  * SCCSID=unix.c 3/15/83
  */
 #include <stdlib.h>
-#include <time.h>
 
 /* declarations to avoid warnings */
 void mcopy(char*, char*, int);
 void mclear(char*,int);
-char  *itoc( int );
-
-
-/*
- * xtime_ - fortran routine for character time
- */
-void xtime_( char *chr )
-{
-	char		*character;
-	time_t		tloc,	scum;
-	int		i;
-
-        tloc = time( & scum );
-        character = asctime( localtime(& tloc) );
-        for( i = 11; i < 19; i++ )
-                *chr++ = *( character + i );
-}
-
-/*
- * xdate_ - fortran routine for character date
- */
-void xdate_( char *chr )
-{
-	struct	tm	*buffer;
-	char		*month,	*day,	*year;
-	time_t		tloc,	scum;
-
-        tloc = time( & scum );
-        buffer = localtime( & tloc);
-        month = itoc( buffer->tm_mon + 1 );   /* month is zero based */
-        while( *month )
-                *chr++ = *month++;
-        *chr++ = '/';
-        day = itoc( buffer->tm_mday );
-        while( *day )
-                *chr++ = *day++;
-        *chr++ = '/';
-        year = itoc( buffer->tm_year );
-        while( *year )
-                *chr++ = *year++;
-}
-/*
- * itoc
- */
-char  *
-itoc( int number )
-{
-  static char string[3];
-
-	/*
-	 * make a two digit string from the least significant digits of number
-	 */
-        string[2] = '\0';
-        string[1] = number%10 + '0';
-        number /= 10;
-        string[0] = number%10 + '0';
-        return( string );
-}
-
-
-/*
- * dblsgl - convert a complex double precision array into
- *  a single precision complex array.
-
- * Note that as written here, this function actually does nothing, it is
- * provide strictly so that the fortran call in spice.f works
- */
-void dblsgl_( double *cstar16, int *numwds )
-{
-	float	*cstar8;
-	int	i;
-
-	return;
-	cstar8 = (float *) cstar16;
-	for ( i = 0; i < (*numwds)/4; i++ ) {
-		cstar8[ i ] = cstar16[ 2*i ];
-	}
-}
 
 
 /*
@@ -162,7 +83,6 @@ void mclear( char *data, int size )
 	}
 }
 
-
 /*
  * mcopy - copy memory.
  */
@@ -180,19 +100,4 @@ void mcopy( char *from, char *to, int size )
 			*--to = *--from;
 		}
 	}
-}
-
-
-/*
- * mcmp - compare memory.
- */
-int
-mcmp( char *from, char *to, int size )
-{
-	for ( ; size > 0; size-- ) {
-		if ( *to++ != *from++ ) {
-			return( 1 );
-		}
-	}
-	return( 0 );
 }
