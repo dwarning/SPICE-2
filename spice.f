@@ -13255,8 +13255,8 @@ C     CHARGE EQUATIONS TO BULK
 C
 10    CONTINUE
 C      ICHARG=0
-      VGB=VGS-VBS
-      VFB=VBI-PHI
+C      VGB=VGS-VBS
+C      VFB=VBI-PHI
       VDSAT=0.0D0
       QG=0.0D0
       QB=0.0D0
@@ -13843,10 +13843,10 @@ C
   100 CSGB1=-(1.0D0-XQCO)*(CGGB1+CBGB1)
       QS=CSGB1*(VGS-VPOF)
      1   +(1.0D0-XQCO)*QCPOF1
-C      write(IOFILE,*) "VGS,VDS,QC,CGGB,CGDB,CGSB,CBGB,CBDB,CBSB =",
-C    1   vgs,vds,qc,cggb,cgdb,cgsb,cbgb,cbdb,cbsb
+      write(IOFILE,*) "VGS,VDS,QC,CGGB,CGDB,CGSB,CBGB,CBDB,CBSB =",
+     1   vgs,vds,qc,cggb,cgdb,cgsb,cbgb,cbdb,cbsb
 C      write(IOFILE,*) "VPOF,VDSAT,VDSAT1,QCPOF1,QCPOF2,QS,CSGB1 =",
-C    1   vpof,vdsat,vdsat1,qcpof1,qcpof2,qs,csgb1
+C     1   vpof,vdsat,vdsat1,qcpof1,qcpof2,qs,csgb1
       QSPOF2=(1.0D0-XQCO)*QCPOF2
       IF (DABS(QS) .LT. DABS(QSPOF2)) QS=QSPOF2
       IF( DABS( QS ) .GE. 0.5D0 * DABS( QC ) ) GOTO 200
@@ -13855,12 +13855,12 @@ C     QS=QS+CSDB*(VDSAT-VDS)
 C     XQC=DMIN1(0.5D0,(QC-QS)/QC)
       XQC=0.5D0
 C      write(IOFILE,*) "QS,XQC =",
-C    1   qs,xqc
+C     1   qs,xqc
       GOTO 1000
   200 QD = QC - QS
       XQC = QD / QC
-C     write(IOFILE,*) "200,QS,QD,XQC =",
-C    1   qs,qd,xqc
+C      write(IOFILE,*) "200,QS,QD,XQC =",
+C     1   qs,qd,xqc
 C
 C     CONSTANT LIMITING OF QS
 C
